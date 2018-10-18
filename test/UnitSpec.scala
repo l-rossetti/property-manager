@@ -1,5 +1,5 @@
 import akka.actor.ActorSystem
-import controllers.{AsyncController, CountController}
+import controllers.CountController
 import org.scalatestplus.play._
 import play.api.test.Helpers._
 import play.api.test.FakeRequest
@@ -29,7 +29,7 @@ class UnitSpec extends PlaySpec {
       val actorSystem = ActorSystem("test")
       try {
         implicit val ec = actorSystem.dispatcher
-        val controller = new AsyncController(stubControllerComponents(), actorSystem)
+        val controller = new AsyncController()(stubControllerComponents(), actorSystem)
         val resultFuture = controller.message(FakeRequest())
         contentAsString(resultFuture) must be("Hi!")
       } finally {

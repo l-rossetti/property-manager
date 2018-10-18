@@ -1,0 +1,21 @@
+@(property: Form[CreatePropertyForm])(implicit request: MessagesRequestHeader)
+
+@import helper._
+
+@request.flash.get("success").map { key =>
+    @request.messages(key)
+}
+
+@main2("Welcome to Property manager") {
+    @form(routes.PropertyController.addProperty()) {
+        @inputText(property("address"))
+        @inputText(property("postCode"))
+        @inputText(property("latitude"))
+        @inputText(property("longitude"))
+        @CSRF.formField
+
+        <div class="buttons">
+            <input type="submit" value="Add Property"/>
+        </div>
+    }
+}
