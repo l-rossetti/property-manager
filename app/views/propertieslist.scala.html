@@ -1,6 +1,9 @@
 @(properties: List[Property])(implicit request: MessagesRequestHeader)
 
-@main2("List of Properties") {
+@main2("Manage properties") {
+<div class="container">
+    <!-- Content here -->
+
     <table class="table">
         <thead>
         <tr>
@@ -10,19 +13,24 @@
             <th scope="col">Coordinates</th>
             <th scope="col">Surface</th>
             <th scope="col">BedRoomCount</th>
+            <th scope="col">Delete</th>
+            <th scope="col">Modify</th>
         </tr>
         </thead>
         <tbody>
         @for(property <- properties){
             <tr>
-                <td>@property.id</td>
+                <th scope="row">@property.id</th>
                 <td>@property.address</td>
                 <td>@property.postCode</td>
                 <td>@property.latitude / @property.longitude</td>
                 <td>@property.surface</td>
                 <td>@property.bedRoomCount</td>
+                <td><a href=""><img src='@routes.Assets.versioned("images/x-2x.png")'></a></td>
+                <td><a href=""><img src='@routes.Assets.versioned("images/cog-2x.png")'></a></td>
             </tr>
         }
         </tbody>
     </table>
+</div>
 }
