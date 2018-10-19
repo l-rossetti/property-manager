@@ -1,4 +1,4 @@
-@(property: Form[CreatePropertyForm])(implicit request: MessagesRequestHeader)
+@(property: Form[Property])(implicit request: MessagesRequestHeader)
 
 @import helper._
 
@@ -6,8 +6,13 @@
     @request.messages(key)
 }
 
+@request.flash.get("error").map { key =>
+    @request.messages(key)
+}
+
 @main2("Welcome to Property manager") {
-    @form(routes.PropertyController.addProperty()) {
+    @form(routes.PropertyController.createProperty()) {
+        <input type="hidden" name="id" value='@property.data.get("id")'>
         @inputText(property("address"))
         @inputText(property("postCode"))
         @inputText(property("latitude"))

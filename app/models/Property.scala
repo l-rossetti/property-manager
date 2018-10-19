@@ -3,7 +3,7 @@ package models
 import play.api.libs.json.Json
 
 
-case class Property (id: Long,
+case class Property (id: Option[Long],
                      address: String,
                      postCode: Int,
                      latitude: Double,

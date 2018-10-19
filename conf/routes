@@ -4,7 +4,7 @@
 
 GET     /                           controllers.HomeController.index
 GET     /manage                     controllers.PropertyController.manage
-POST    /add-property               controllers.PropertyController.addProperty
+POST    /create-property               controllers.PropertyController.createProperty
 GET     /properties                 controllers.PropertyController.getProperties
 
 # Map static resources from the /public folder to the /assets URL path
