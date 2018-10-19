@@ -46,8 +46,8 @@ class PropertyController @Inject() (repo: PropertyRepository,
       * A REST endpoint that gets all the properties as JSON.
       */
     def getProperties = Action.async { implicit request =>
-        repo.list().map { property =>
-            Ok(Json.toJson(property))
+        repo.getProperties().map { properties =>
+            Ok(views.html.propertieslist(properties.toList))
         }
     }
 

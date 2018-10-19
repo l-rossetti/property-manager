@@ -95,7 +95,7 @@ class PropertyRepositoryImpl @Inject()(dbConfigProvider: DatabaseConfigProvider)
         }
     }
 
-    def list(): Future[Seq[Property]] = db.run {
+    def getProperties(): Future[Seq[Property]] = db.run {
         properties.result
     }
 }
@@ -120,5 +120,5 @@ trait PropertyRepository {
     /**
       * List all the properties in the database.
       */
-    def list(): Future[Seq[Property]]
+    def getProperties(): Future[Seq[Property]]
 }

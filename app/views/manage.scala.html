@@ -10,7 +10,7 @@
     @request.messages(key)
 }
 
-@main2("Welcome to Property manager") {
+@main2("Create a new Property") {
     @form(routes.PropertyController.createProperty()) {
         <input type="hidden" name="id" value='@property.data.get("id")'>
         @inputText(property("address"))
