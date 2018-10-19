@@ -2,10 +2,9 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-GET     /                           controllers.HomeController.index
-GET     /manage                     controllers.PropertyController.manage
+GET     /                           controllers.PropertyController.getProperties
+GET     /conf-property              controllers.PropertyController.manage
 POST    /create-property            controllers.PropertyController.createProperty
-GET     /properties                 controllers.PropertyController.getProperties
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(file)
