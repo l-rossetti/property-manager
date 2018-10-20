@@ -9,6 +9,7 @@ import play.api.data.validation.Constraints._
 import play.api.data.format.Formats._
 import play.api.libs.json.Json
 import play.api.Logger
+import play.api.routing.JavaScriptReverseRouter
 import services.PropertyRepository
 
 import scala.concurrent.{ExecutionContext, Future}
@@ -26,19 +27,26 @@ class PropertyController @Inject() (repo: PropertyRepository,
     val propertyForm: Form[Property] = Form {
         mapping(
             "id" -> optional(longNumber),
-            "address" -> nonEmptyText,
-            "postCode" -> number.verifying(min(0)),
-            "latitude" -> of(doubleFormat),
-            "longitude" -> of(doubleFormat),
+            "address" -> default(nonEmptyText, "via manzoni,30"),
+            "postCode" -> default(number.verifying(min(0)), 6160),
+            "latitude" -> default(of(doubleFormat), 140.8),
+            "longitude" -> default(of(doubleFormat), 198.2),
             "surface" -> optional(number.verifying(min(0))),
             "bedRoomCount" -> optional(number.verifying(min(0)))
         )(Property.apply)(Property.unapply)
+    }
+    
+    /**
+      * The manage action.
+      */
+    def manage = Action { implicit request =>
+        Ok(views.html.manage(propertyForm))
     }
 
     /**
       * The manage action.
       */
-    def manage = Action { implicit request =>
+    def configure(property: Property) = Action { implicit request =>
         Ok(views.html.manage(propertyForm))
     }
 
@@ -78,18 +86,19 @@ class PropertyController @Inject() (repo: PropertyRepository,
         )
     }
 
-    def deleteProperty = Action.async { implicit request =>
-        propertyForm.bindFromRequest.fold(
-            errorForm => {
-                Future.successful(Ok(views.html.manage(errorForm)))
-            },
-            property => {
-                repo.delete(property.id.get).map {
-                    case false => Redirect(routes.PropertyController.manage()).flashing("error" -> "property cannot be updated")
-                    case true => Redirect(routes.PropertyController.manage()).flashing("success" -> "property.deleted")
-                }
-            }
-        )
+    def deleteProperty(id: Long) = Action.async { implicit request =>
+        //Logger.info(s"${request.body.asJson.get("id").as[String]}")
+
+        repo.delete(id).map {
+            case false =>
+                Logger.info(request.headers.toString())
+                Redirect(routes.PropertyController.getProperties())
+                  .flashing("error" -> "property cannot be updated")
+            case true =>
+                Logger.info(request.headers.toString())
+                Redirect(routes.PropertyController.getProperties())
+                  .flashing("success" -> s"property with id ${id} has been deleted")
+        }
     }
 
     def updateProperty = Action.async { implicit request =>

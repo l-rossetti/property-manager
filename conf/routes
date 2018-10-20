@@ -4,7 +4,10 @@
 
 GET     /                           controllers.PropertyController.getProperties
 GET     /conf-property              controllers.PropertyController.manage
+#GET     /conf-property/            controllers.PropertyController.configure(property: models.Property)
 POST    /create-property            controllers.PropertyController.createProperty
+POST    /del-property/:id           controllers.PropertyController.deleteProperty(id: Long)
+
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(file)

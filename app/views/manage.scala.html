@@ -14,33 +14,33 @@
     @form(routes.PropertyController.createProperty()) {
         <div class="form-group row">
             <label for="id" class="col-sm-2 col-form-label"></label>
-            <input name="id" value='@property.data.get("id")' placeholder="ID" id="ID" type="hidden"  class="form-control">
+            <input name="id" value='@property.data.get("id")' placeholder="ID" id="ID" type="hidden"  class="form-control"/>
         </div>
         <div class="form-group row">
             <label for="address" class="col-sm-2 col-form-label">Address</label>
             <div class="col-sm-10">
-                <input name="address" value='@property.data.get("address")' id="address" placeholder="Address" type="text" class="form-control">
+                <input name="address" value='@property.data.get("address")' id="address" placeholder="Address" type="text" class="form-control"/>
             </div>
         </div>
         <div class="form-group row">
             <label for="postCode" class="col-sm-2 col-form-label">PostCode</label>
             <div class="col-sm-10">
-                <input name="postCode" value='@property.data.get("postCode")' id="postCode" placeholder="PostCode" type="number" class="form-control">
+                <input name="postCode" value='@property.data.get("postCode")' id="postCode" placeholder="PostCode" type="number" class="form-control"/>
             </div>
         </div>
         <div class="form-group row">
             <label for="latitude" class="col-sm-2 col-form-label">Latitude</label>
             <div class="col-sm-10">
-                <input name="latitude" value='@property.data.get("latitude")' id="latitude" placeholder="Latitude" type="number" class="form-control">
+                <input name="latitude" value='@property.data.get("latitude")' id="latitude" placeholder="Latitude" type="number" class="form-control"/>
             </div>
         </div>
         <div class="form-group row">
             <label for="longitude" class="col-sm-2 col-form-label">Longitude</label>
             <div class="col-sm-10">
-                <input name="longitude" value='@property.data.get("longitude")' id="longitude" placeholder="Longitude" type="number" class="form-control">
+                <input name="longitude" value='@property.data.get("longitude")' id="longitude" placeholder="Longitude" type="number" class="form-control"/>
             </div>
         </div>
         <button type="submit" class="btn btn-primary btn-lg btn-block">Create</button>
-        @CSRF.formField
+        @helper.CSRF.formField
     }
 }

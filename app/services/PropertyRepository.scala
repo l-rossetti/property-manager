@@ -89,6 +89,7 @@ class PropertyRepositoryImpl @Inject()(dbConfigProvider: DatabaseConfigProvider)
     }
 
     def delete(id: Long): Future[Boolean] = db.run {
+        Logger.info("delete " + id)
         properties.filter(_.id === id).delete.map {
             case 0 => false
             case _ => true

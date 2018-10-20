@@ -26,8 +26,18 @@
                 <td>@property.latitude / @property.longitude</td>
                 <td>@property.surface</td>
                 <td>@property.bedRoomCount</td>
-                <td><a href=""><img src='@routes.Assets.versioned("images/x-2x.png")'></a></td>
-                <td><a href=""><img src='@routes.Assets.versioned("images/cog-2x.png")'></a></td>
+                <td>
+                    @helper.form(routes.PropertyController.deleteProperty(property.id.get)) {
+                        <input type="submit" value="x" />
+                        @helper.CSRF.formField
+                    }
+                </td>
+                <td>
+                    @helper.form(routes.PropertyController.deleteProperty(1)) {
+                        <input type="submit" value="update" />
+                        @helper.CSRF.formField
+                    }
+                </td>
             </tr>
         }
         </tbody>
