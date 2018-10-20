@@ -7,12 +7,10 @@ import play.api.data._
 import play.api.data.Forms._
 import play.api.data.validation.Constraints._
 import play.api.data.format.Formats._
-import play.api.libs.json.Json
 import play.api.Logger
-import play.api.routing.JavaScriptReverseRouter
 import services.PropertyRepository
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.{ExecutionContext}
 import scala.util.{Failure, Success}
 
 @Singleton
@@ -20,6 +18,9 @@ class PropertyController @Inject() (repo: PropertyRepository,
                                     cc: MessagesControllerComponents
                                    ) (implicit ec: ExecutionContext)
   extends MessagesAbstractController(cc) {
+
+    val createAction = "Create"
+    val updateAction = "Update"
 
     /**
       * The mapping for the property form.
@@ -37,26 +38,13 @@ class PropertyController @Inject() (repo: PropertyRepository,
     }
     
     /**
-      * The manage action.
+      * The load property manager action.
       */
-    def manage = Action { implicit request =>
-        Ok(views.html.manage(propertyForm))
+    def loadPropertyManager = Action.async { implicit request =>
+        repo.getProperties().map { properties =>  Ok(views.html.property_manager(propertyForm, createAction, properties)) }
     }
-
-    /**
-      * The manage action.
-      */
-    def configure(property: Property) = Action { implicit request =>
-        Ok(views.html.manage(propertyForm))
-    }
-
-    /**
-      * A REST endpoint that gets all the properties as JSON.
-      */
-    def getProperties = Action.async { implicit request =>
-        repo.getProperties().map { properties =>
-            Ok(views.html.propertieslist(properties.toList))
-        }
+    def configure(property: Property) = Action.async { implicit request =>
+        repo.getProperties().map { properties =>  Ok(views.html.property_manager(propertyForm, updateAction, properties)) }
     }
 
     /**
@@ -71,16 +59,16 @@ class PropertyController @Inject() (repo: PropertyRepository,
             // We also wrap the result in a successful future, since this action is synchronous, but we're required to return
             // a future because the property creation function returns a future.
             errorForm => {
-                Future.successful(Ok(views.html.manage(errorForm)))
+                    repo.getProperties().map { properties =>  Ok(views.html.property_manager(errorForm, createAction, properties)) }
             },
             // There were no errors in the form, so create the property.
             property => {
                 repo.create(property).map {
                     case Success(property) =>
                         // If successful, we simply redirect to the manage page.
-                        Redirect(routes.PropertyController.manage()).flashing("success" -> s"property created with id ${property.id}")
+                        Redirect(routes.PropertyController.loadPropertyManager()).flashing("success" -> s"property created with id ${property.id}")
                     case Failure(e) =>
-                        Redirect(routes.PropertyController.manage()).flashing("error" -> s"cannot create property ${e.getMessage}")
+                        Redirect(routes.PropertyController.loadPropertyManager()).flashing("error" -> s"cannot create property ${e.getMessage}")
                 }
             }
         )
@@ -92,11 +80,11 @@ class PropertyController @Inject() (repo: PropertyRepository,
         repo.delete(id).map {
             case false =>
                 Logger.info(request.headers.toString())
-                Redirect(routes.PropertyController.getProperties())
+                Redirect(routes.PropertyController.loadPropertyManager())
                   .flashing("error" -> "property cannot be updated")
             case true =>
                 Logger.info(request.headers.toString())
-                Redirect(routes.PropertyController.getProperties())
+                Redirect(routes.PropertyController.loadPropertyManager())
                   .flashing("success" -> s"property with id ${id} has been deleted")
         }
     }
@@ -104,12 +92,12 @@ class PropertyController @Inject() (repo: PropertyRepository,
     def updateProperty = Action.async { implicit request =>
         propertyForm.bindFromRequest.fold(
             errorForm => {
-                Future.successful(Ok(views.html.manage(errorForm)))
+                repo.getProperties().map { properties =>  Ok(views.html.property_manager(errorForm, updateAction, properties)) }
             },
             property => {
                 repo.update(property).map {
-                    case None => Redirect(routes.PropertyController.manage()).flashing("error" -> s"property with id ${property.id} cannot be updated")
-                    case _ => Redirect(routes.PropertyController.manage()).flashing("success" -> s"property with id  ${property.id} updated")
+                    case None => Redirect(routes.PropertyController.loadPropertyManager()).flashing("error" -> s"property with id ${property.id} cannot be updated")
+                    case _ => Redirect(routes.PropertyController.loadPropertyManager()).flashing("success" -> s"property with id  ${property.id} updated")
                 }
             }
         )
