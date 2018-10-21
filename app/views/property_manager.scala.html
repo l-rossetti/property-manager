@@ -7,7 +7,7 @@
     @form(action) {
         <div class="form-group row">
             <label for="id" class="col-sm-2 col-form-label"></label>
-            <input name="id" value='@propertyForm.data.get("id")' placeholder="ID" id="ID" type="hidden"  class="form-control"/>
+            <input name="id" value='@propertyForm.data.get("id")' id="ID" type="hidden"  class="form-control"/>
         </div>
         <div class="form-group row">
             <label for="address" class="col-sm-2 col-form-label">Address *</label>
@@ -47,7 +47,7 @@
         <div class="form-group row">
             <label for="bedRoomCount" class="col-sm-2 col-form-label">BedRoomCount</label>
             <div class="col-sm-10">
-                <input name="bedRoomCount" value='@propertyForm.data.get("bedRoomCount")' id="bedRoomCount" placeholder="BedRoomCount" type="number" class="form-control"/>
+                <input name="bedRoomCount" value='@propertyForm.data.get("bedRoomCount")' id="bedRoomCount" placeholder="BedRoomCount" type="text" class="form-control"/>
                 @propertyForm.error("bedRoomCount").map { error => @error.format }
             </div>
         </div>
@@ -76,10 +76,11 @@
                 <th scope="col">Address</th>
                 <th scope="col">PostCode</th>
                 <th scope="col">Coordinates</th>
-                <th scope="col">Surface</th>
-                <th scope="col">BedRoomCount</th>
+                <th scope="col">Surface [sqm]</th>
+                <th scope="col">Rooms</th>
                 <th scope="col">Delete</th>
                 <th scope="col">Modify</th>
+                <th scope="col">Add Price</th>
             </tr>
             </thead>
             <tbody>
@@ -90,7 +91,7 @@
                 <td>@property.postCode</td>
                 <td>@property.latitude / @property.longitude</td>
                 <td>@property.surface</td>
-                <td>@property.bedRoomCount</td>
+                <td>@if(property.bedRoomCount){ x @property.bedRoomCount } </td>
                 <td>
                     @form(routes.PropertyController.delete(property.id.get)) {
                         <input type="submit" value="x" class="btn btn-danger"/>
@@ -101,6 +102,12 @@
                     @form(routes.PropertyController.loadPropertyManager(Some(property))) {
                         <input type="submit" value="~" class="btn btn-primary"/>
                         @CSRF.formField
+                    }
+                </td>
+                <td>
+                    @form(routes.PriceController.loadPriceManager(property.id.get, None)) {
+                    <input type="submit" value="+" class="btn btn-info"/>
+                    @CSRF.formField
                     }
                 </td>
             </tr>

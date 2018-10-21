@@ -2,11 +2,26 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
+# GET loads the page after update (rimanda a se stessa coi dati), POST modify button
 POST    /                           controllers.PropertyController.loadPropertyManager(property: Option[models.Property])
 GET     /                           controllers.PropertyController.loadPropertyManager(property: Option[models.Property])
+
+# Property CUD
+
 POST    /create-property            controllers.PropertyController.create
-POST    /delete-property            controllers.PropertyController.delete(id: Long)
 POST    /update-property            controllers.PropertyController.update(property: models.Property)
+POST    /delete-property            controllers.PropertyController.delete(id: Long)
+
+
+# GET loads the page after creation or update, POST asks to add a price to a property
+POST    /price-manager              controllers.PriceController.loadPriceManager(propertyID: Long, price: Option[models.Price])
+GET     /price-manager              controllers.PriceController.loadPriceManager(propertyID: Long, price: Option[models.Price])
+
+# Price CUD
+
+POST    /create-price               controllers.PriceController.create
+POST    /update-price               controllers.PriceController.update(price: models.Price)
+POST    /delete-price               controllers.PriceController.delete(id: Long, propertyID: Long)
 
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.versioned(file)

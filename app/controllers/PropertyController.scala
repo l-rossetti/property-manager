@@ -75,11 +75,14 @@ class PropertyController @Inject() (repo: PropertyRepository,
         )
     }
 
+    /**
+      * The delete property action.
+      */
     def delete(id: Long) = Action.async { implicit request =>
         repo.delete(id).map {
             case false =>
                 Redirect(routes.PropertyController.loadPropertyManager(None))
-                  .flashing("error" -> "property cannot be updated")
+                  .flashing("error" -> "property cannot be deleted")
             case true =>
                 Redirect(routes.PropertyController.loadPropertyManager(None))
                   .flashing("success" -> s"property with id ${id} has been deleted")

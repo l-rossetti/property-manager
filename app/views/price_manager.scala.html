@@ -1,16 +1,25 @@
-@(priceForm: Form[Price], property: Property, action: Call, btnTextAction: String, priceEvolution: Seq[Price])(implicit request: MessagesRequestHeader)
+@(priceForm: Form[Price], propertyID: Long, action: Call, btnTextAction: String, priceEvolution: Seq[Price])(implicit request: MessagesRequestHeader)
 
 @import helper._
 
 @main("Price Manager ") {
 <div class="container" name="form-container">
+    <div>Prices for property id @propertyID (@priceForm.data.get("propertyID"))</div>
     @form(action) {
     <div class="form-group row">
         <label for="id" class="col-sm-2 col-form-label"></label>
-        <input name="id" value='@priceForm.data.get("id")' placeholder="ID" id="ID" type="hidden"  class="form-control"/>
+        <input name="id" value='@priceForm.data.get("id")' id="ID" type="hidden"  class="form-control"/>
     </div>
     <div class="form-group row">
-        <label for="date" class="col-sm-2 col-form-label">Address *</label>
+        @if(priceForm.data.get("propertyID")){
+        @propertyID=@priceForm.data.get("propertyID")
+        <!--trucco : @propertyID ------------------------------------------------------------------------------------->
+        <label for="propertyID" class="col-sm-2 col-form-label"></label>
+        <input name="propertyID" value='@propertyID' id="propertyID" type="hidden"  class="form-control"/>
+        }
+    </div>
+    <div class="form-group row">
+        <label for="date" class="col-sm-2 col-form-label">Date *</label>
         <div class="col-sm-10">
             <input name="date" value='@priceForm.data.get("date")' id="date" placeholder="Date" type="date" class="form-control"/>
             @priceForm.error("date").map { error => @error.format }
@@ -58,13 +67,13 @@
             <td>@price.date</td>
             <td>@price.price</td>
             <td>
-                @form(routes.PropertyController.delete(price.id.get)) {
+                @form(routes.PriceController.delete(price.id.get, price.propertyID)) {
                 <input type="submit" value="x" class="btn btn-danger"/>
                 @CSRF.formField
                 }
             </td>
             <td>
-                @form(routes.PropertyController.loadPropertyManager(Some(property))) {
+                @form(routes.PriceController.loadPriceManager(price.propertyID, Some(price))) {
                 <input type="submit" value="~" class="btn btn-primary"/>
                 @CSRF.formField
                 }
