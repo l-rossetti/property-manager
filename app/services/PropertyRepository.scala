@@ -31,14 +31,6 @@ class PropertyRepositoryImpl @Inject()(dbConfigProvider: DatabaseConfigProvider)
       * The starting point for all queries on the properties table.
       */
     private val properties = TableQuery[PropertyTable]
-    private val existing = db.run(MTable.getTables)
-    val f = existing.flatMap( v => {
-        val names = v.map(mt => mt.name.name)
-        val createIfNotExist = List(properties)
-          .filter( table => (!names.contains(table.baseTableRow.tableName))).map(_.schema.create)
-        db.run(DBIO.sequence(createIfNotExist))
-    })
-    Await.result(f, Duration.Inf)
 
     /**
       * Here we define the table.
@@ -73,6 +65,18 @@ class PropertyRepositoryImpl @Inject()(dbConfigProvider: DatabaseConfigProvider)
           */
         def * = (id.?, address, postCode, latitude, longitude, surface, bedRoomCount) <> ((Property.apply _).tupled, Property.unapply)
     }
+
+    /**
+      * Table creation
+      */
+    private val existing = db.run(MTable.getTables)
+    val f = existing.flatMap( v => {
+        val names = v.map(mt => mt.name.name)
+        val createIfNotExist = List(properties)
+          .filter( table => (!names.contains(table.baseTableRow.tableName))).map(_.schema.create)
+        db.run(DBIO.sequence(createIfNotExist))
+    })
+    Await.result(f, Duration.Inf)
 
     /**
       * CRUD
