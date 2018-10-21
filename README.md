@@ -1,5 +1,12 @@
 # PROPERTY MANAGER
+  
+  
+### HOW TO EXECUTE THE .zip PACKAGE
+The package has been compiled with Java-8:  
 
+    unzip property-manager-1.0-SNAPSHOT.zip
+    chmod +x property-manager-1.0-SNAPSHOT/bin/property-manager
+    ./property-manager-1.0-SNAPSHOT/bin/property-manager -Dplay.crypto.secret=abcdefghijk 
 
 ### OVERVIEW
 The property manager is a piece of software that allow a user to add/remove/modify a property and its attributes.
