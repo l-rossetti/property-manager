@@ -2,14 +2,13 @@ package services
 
 import javax.inject.{Inject, Singleton}
 import models.Property
-import play.api.Logger
 import play.api.db.slick.DatabaseConfigProvider
 import slick.jdbc.JdbcProfile
 import slick.jdbc.meta.MTable
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
-import scala.util.{Failure, Success, Try}
+import scala.util.{Try}
 
 
 /**
@@ -35,8 +34,8 @@ class PropertyRepositoryImpl @Inject()(dbConfigProvider: DatabaseConfigProvider)
     private val existing = db.run(MTable.getTables)
     val f = existing.flatMap( v => {
         val names = v.map(mt => mt.name.name)
-        val createIfNotExist = List(properties).filter( table =>
-            (!names.contains(table.baseTableRow.tableName))).map(_.schema.create)
+        val createIfNotExist = List(properties)
+          .filter( table => (!names.contains(table.baseTableRow.tableName))).map(_.schema.create)
         db.run(DBIO.sequence(createIfNotExist))
     })
     Await.result(f, Duration.Inf)
@@ -75,7 +74,9 @@ class PropertyRepositoryImpl @Inject()(dbConfigProvider: DatabaseConfigProvider)
         def * = (id.?, address, postCode, latitude, longitude, surface, bedRoomCount) <> ((Property.apply _).tupled, Property.unapply)
     }
 
-    /** CRUD */
+    /**
+      * CRUD
+      */
     def create(property: Property): Future[Try[Property]] = db.run {
         val insertQuery = properties returning properties.map(_.id) into ((property, id) => property.copy(id = Some(id)))
         (insertQuery += property).asTry
@@ -89,7 +90,6 @@ class PropertyRepositoryImpl @Inject()(dbConfigProvider: DatabaseConfigProvider)
     }
 
     def delete(id: Long): Future[Boolean] = db.run {
-        Logger.info("delete " + id)
         properties.filter(_.id === id).delete.map {
             case 0 => false
             case _ => true
