@@ -53,7 +53,7 @@ class PropertyRepositoryImpl @Inject()(dbConfigProvider: DatabaseConfigProvider)
         def address = column[String]("address")
 
         /** The postCode column */
-        def postCode = column[Int]("postCode")
+        def postCode = column[String]("postCode")
 
         /** The latitude column */
         def latitude = column[Double]("latitude")

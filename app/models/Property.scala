@@ -2,7 +2,7 @@ package models
 
 case class Property (id: Option[Long],
                      address: String,
-                     postCode: Int,
+                     postCode: String,
                      latitude: Double,
                      longitude: Double,
                      surface: Option[Int],
@@ -16,8 +16,7 @@ object Property {
                                     optLongBinder: QueryStringBindable[Option[Long]],
                                     stringBinder:  QueryStringBindable[String],
                                     doubleBinder:  QueryStringBindable[Double],
-                                    optIntBinder:  QueryStringBindable[Option[Int]],
-                                    intBinder:     QueryStringBindable[Int]
+                                    optIntBinder:  QueryStringBindable[Option[Int]]
                                ) =
         new QueryStringBindable[Property] {
 
@@ -25,7 +24,7 @@ object Property {
                 for {
                     id              <- optLongBinder.bind(key + ".id", params)
                     address         <- stringBinder.bind(key + ".address", params)
-                    postCode        <- intBinder.bind(key + ".postCode", params)
+                    postCode        <- stringBinder.bind(key + ".postCode", params)
                     latitude        <- doubleBinder.bind(key + ".latitude", params)
                     longitude       <- doubleBinder.bind(key + ".longitude", params)
                     surface         <- optIntBinder.bind(key + ".surface", params)
@@ -45,7 +44,7 @@ object Property {
             override def unbind(key: String, p: Property): String =
                 optLongBinder.unbind(key + ".id", p.id) + "&" +
                 stringBinder.unbind(key + ".address", p.address) + "&" +
-                intBinder.unbind(key + ".postCode", p.postCode) + "&" +
+                stringBinder.unbind(key + ".postCode", p.postCode) + "&" +
                 doubleBinder.unbind(key + ".latitude", p.latitude) + "&" +
                 doubleBinder.unbind(key + ".longitude", p.longitude) +
                 ( p.surface match {

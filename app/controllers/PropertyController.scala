@@ -34,7 +34,7 @@ class PropertyController @Inject() (repo: PropertyRepository,
         mapping(
             "id" ->             optional(longNumber),
             "address" ->        nonEmptyText,
-            "postCode" ->       number.verifying(min(0)),
+            "postCode" ->       nonEmptyText.verifying("Number format required", p => p.matches("[0-9]+") ),
             "latitude" ->       of(doubleFormat).verifying(min(-180.0), max(180.0)),
             "longitude" ->      of(doubleFormat).verifying(min(-90.0), max(90.0)),
             "surface" ->        optional(number.verifying(min(0))),
@@ -129,7 +129,6 @@ class PropertyController @Inject() (repo: PropertyRepository,
 
         propertyForm.bindFromRequest.fold(
             errorForm => {
-                Logger.info("errr")
                 repo.getProperties().map {
                     properties =>  BadRequest(views.html.property_manager(
                         errorForm,
