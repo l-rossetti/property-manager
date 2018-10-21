@@ -1,4 +1,4 @@
-@(property: Form[Property], action: Call, btnTextAction: String, properties: Seq[Property])(implicit request: MessagesRequestHeader)
+@(propertyForm: Form[Property], action: Call, btnTextAction: String, properties: Seq[Property])(implicit request: MessagesRequestHeader)
 
 @import helper._
 
@@ -7,48 +7,48 @@
     @form(action) {
         <div class="form-group row">
             <label for="id" class="col-sm-2 col-form-label"></label>
-            <input name="id" value='@property.data.get("id")' placeholder="ID" id="ID" type="hidden"  class="form-control"/>
+            <input name="id" value='@propertyForm.data.get("id")' placeholder="ID" id="ID" type="hidden"  class="form-control"/>
         </div>
         <div class="form-group row">
             <label for="address" class="col-sm-2 col-form-label">Address *</label>
             <div class="col-sm-10">
-                <input name="address" value='@property.data.get("address")' id="address" placeholder="Address" type="text" class="form-control"/>
-                @property.error("address").map { error => @error.format }
+                <input name="address" value='@propertyForm.data.get("address")' id="address" placeholder="Address" type="text" class="form-control"/>
+                @propertyForm.error("address").map { error => @error.format }
             </div>
         </div>
         <div class="form-group row">
             <label for="postCode" class="col-sm-2 col-form-label">PostCode *</label>
             <div class="col-sm-10">
-                <input name="postCode" value='@property.data.get("postCode")' id="postCode" placeholder="PostCode" type="text" class="form-control"/>
-                @property.error("postCode").map { error => @error.format }
+                <input name="postCode" value='@propertyForm.data.get("postCode")' id="postCode" placeholder="PostCode" type="text" class="form-control"/>
+                @propertyForm.error("postCode").map { error => @error.format }
             </div>
         </div>
         <div class="form-group row">
             <label for="latitude" class="col-sm-2 col-form-label">Latitude *</label>
             <div class="col-sm-10">
-                <input name="latitude" value='@property.data.get("latitude")' id="latitude" placeholder="Latitude" type="number" step="0.0000001" class="form-control"/>
-                @property.error("latitude").map { error => @error.format }
+                <input name="latitude" value='@propertyForm.data.get("latitude")' id="latitude" placeholder="Latitude" type="number" step="0.0000001" class="form-control"/>
+                @propertyForm.error("latitude").map { error => @error.format }
             </div>
         </div>
         <div class="form-group row">
             <label for="longitude" class="col-sm-2 col-form-label">Longitude *</label>
             <div class="col-sm-10">
-                <input name="longitude" value='@property.data.get("longitude")' id="longitude" placeholder="Longitude" type="number" step="0.0000001" class="form-control"/>
-                @property.error("longitude").map { error => @error.format }
+                <input name="longitude" value='@propertyForm.data.get("longitude")' id="longitude" placeholder="Longitude" type="number" step="0.0000001" class="form-control"/>
+                @propertyForm.error("longitude").map { error => @error.format }
             </div>
         </div>
         <div class="form-group row">
             <label for="surface" class="col-sm-2 col-form-label">Surface</label>
             <div class="col-sm-10">
-                <input name="surface" value='@property.data.get("surface")' id="surface" placeholder="Surface" type="number" class="form-control"/>
-                @property.error("surface").map { error => @error.format }
+                <input name="surface" value='@propertyForm.data.get("surface")' id="surface" placeholder="Surface" type="number" class="form-control"/>
+                @propertyForm.error("surface").map { error => @error.format }
             </div>
         </div>
         <div class="form-group row">
             <label for="bedRoomCount" class="col-sm-2 col-form-label">BedRoomCount</label>
             <div class="col-sm-10">
-                <input name="bedRoomCount" value='@property.data.get("bedRoomCount")' id="bedRoomCount" placeholder="BedRoomCount" type="number" class="form-control"/>
-                @property.error("bedRoomCount").map { error => @error.format }
+                <input name="bedRoomCount" value='@propertyForm.data.get("bedRoomCount")' id="bedRoomCount" placeholder="BedRoomCount" type="number" class="form-control"/>
+                @propertyForm.error("bedRoomCount").map { error => @error.format }
             </div>
         </div>
         <button type="submit" class="btn btn-success btn-lg btn-block">@btnTextAction</button>
@@ -57,6 +57,7 @@
     </div>
     <br/>
     <br/>
+    <!------------------------------------ properties table ------------------------------------>
     <div class="container" name="table-container">
         @request.flash.get("success").map { key =>
             <div class="alert alert-info" role="alert">

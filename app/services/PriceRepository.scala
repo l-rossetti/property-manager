@@ -16,7 +16,7 @@ import scala.util.Try
 
 
 /**
-  * A repository for properties.
+  * A repository for prices.
   *
   * @param dbConfigProvider The Play db config provider. Play will inject this.
   */
@@ -32,7 +32,7 @@ class PriceRepositoryImpl @Inject()(dbConfigProvider: DatabaseConfigProvider)(im
     import dbConfig._
     import profile.api._
     /**
-      * The starting point for all queries on the properties table.
+      * The starting point for all queries on the price table.
       */
     private val prices = TableQuery[PriceTable]
 
@@ -74,7 +74,7 @@ class PriceRepositoryImpl @Inject()(dbConfigProvider: DatabaseConfigProvider)(im
       * CRUD
       */
     def create(price: Price): Future[Try[Price]] = db.run {
-        val insertQuery = prices returning prices.map(_.id) into ((property, id) => property.copy(id = Some(id)))
+        val insertQuery = prices returning prices.map(_.id) into ((price, id) => price.copy(id = Some(id)))
         (insertQuery += price).asTry
     }
 
@@ -101,8 +101,8 @@ trait PriceRepository {
     /**
       * Create a price with the mandatory parameters.
       *
-      * This is an asynchronous operation, it will return a future of the created property, which can be used to obtain the
-      * id for that property.
+      * This is an asynchronous operation, it will return a future of the created price, which can be used to obtain the
+      * id for that price.
       */
     def create(price: Price): Future[Try[Price]]
 
