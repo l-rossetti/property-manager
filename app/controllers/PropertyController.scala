@@ -1,5 +1,6 @@
 package controllers
 
+
 import javax.inject.{Inject, Singleton}
 import models.Property
 import play.api.mvc.{MessagesAbstractController, MessagesControllerComponents}
@@ -10,7 +11,7 @@ import play.api.data.format.Formats._
 import play.api.Logger
 import services.PropertyRepository
 
-import scala.concurrent.{ExecutionContext}
+import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
 @Singleton
@@ -34,8 +35,8 @@ class PropertyController @Inject() (repo: PropertyRepository,
             "id" ->             optional(longNumber),
             "address" ->        nonEmptyText,
             "postCode" ->       number.verifying(min(0)),
-            "latitude" ->       of(doubleFormat).verifying(min(0.0), max(100.0)),
-            "longitude" ->      of(doubleFormat).verifying(min(0.0)),
+            "latitude" ->       of(doubleFormat).verifying(min(-180.0), max(180.0)),
+            "longitude" ->      of(doubleFormat).verifying(min(-90.0), max(90.0)),
             "surface" ->        optional(number.verifying(min(0))),
             "bedRoomCount" ->   optional(number.verifying(min(0)))
         )(Property.apply)(Property.unapply)
@@ -47,28 +48,28 @@ class PropertyController @Inject() (repo: PropertyRepository,
             case _    => propertyForm.fill(property.get)
         }
     }
-    /**
-      * The load property manager action.
-      */
-    def loadPropertyManager = Action.async { implicit request =>
-        val createAction = routes.PropertyController.create()
-        repo.getProperties().map {
-            properties =>  Ok(views.html.property_manager(
-                getPropertyForm(None),
-                createAction,
-                ButtonText.Create.toString,
-                properties
-            ))
+    def getFormButtonText(property: Option[Property]) = {
+        property match {
+            case None => ButtonText.Create.toString
+            case _    => ButtonText.Update.toString
+        }
+    }
+    def getFormRoute(property: Option[Property]) = {
+        property match {
+            case None => routes.PropertyController.create
+            case _    => routes.PropertyController.update(property.get)
         }
     }
 
-    def fillForm(property: Property) = Action.async { implicit request =>
-        val updateAction = routes.PropertyController.update(property)
+    /**
+      * The load property manager action.
+      */
+    def loadPropertyManager(property: Option[Property]) = Action.async { implicit request =>
         repo.getProperties().map {
             properties =>  Ok(views.html.property_manager(
-                getPropertyForm(Some(property)),
-                updateAction,
-                ButtonText.Update.toString,
+                getPropertyForm(property),
+                getFormRoute(property),
+                getFormButtonText(property),
                 properties
             ))
         }
@@ -86,10 +87,10 @@ class PropertyController @Inject() (repo: PropertyRepository,
             // We also wrap the result in a successful future, since this action is synchronous, but we're required to return
             // a future because the property creation function returns a future.
             errorForm => {
-                val createAction = routes.PropertyController.create()
                 repo.getProperties().map {
-                    properties =>  Ok(views.html.property_manager(
-                        errorForm, createAction,
+                    properties =>  BadRequest(views.html.property_manager(
+                        errorForm,
+                        routes.PropertyController.create(),
                         ButtonText.Create.toString,
                         properties
                     ))
@@ -100,10 +101,10 @@ class PropertyController @Inject() (repo: PropertyRepository,
                 repo.create(property).map {
                     case Success(property) =>
                         // If successful, we simply redirect to the main page.
-                        Redirect(routes.PropertyController.loadPropertyManager())
+                        Redirect(routes.PropertyController.loadPropertyManager(None))
                           .flashing("success" -> s"new property created with id ${property.id.get}")
                     case Failure(e) =>
-                        Redirect(routes.PropertyController.loadPropertyManager())
+                        Redirect(routes.PropertyController.loadPropertyManager(None))
                           .flashing("error" -> s"cannot create property ${e.getMessage}")
                 }
             }
@@ -113,10 +114,10 @@ class PropertyController @Inject() (repo: PropertyRepository,
     def delete(id: Long) = Action.async { implicit request =>
         repo.delete(id).map {
             case false =>
-                Redirect(routes.PropertyController.loadPropertyManager())
+                Redirect(routes.PropertyController.loadPropertyManager(None))
                   .flashing("error" -> "property cannot be updated")
             case true =>
-                Redirect(routes.PropertyController.loadPropertyManager())
+                Redirect(routes.PropertyController.loadPropertyManager(None))
                   .flashing("success" -> s"property with id ${id} has been deleted")
         }
     }
@@ -128,11 +129,11 @@ class PropertyController @Inject() (repo: PropertyRepository,
 
         propertyForm.bindFromRequest.fold(
             errorForm => {
-                val updateAction = routes.PropertyController.update(property)
+                Logger.info("errr")
                 repo.getProperties().map {
-                    properties =>  Ok(views.html.property_manager(
+                    properties =>  BadRequest(views.html.property_manager(
                         errorForm,
-                        updateAction,
+                        routes.PropertyController.update(property),
                         ButtonText.Update.toString,
                         properties
                     ))
@@ -141,10 +142,10 @@ class PropertyController @Inject() (repo: PropertyRepository,
             property => {
                 repo.update(property).map {
                     case None =>
-                        Redirect(routes.PropertyController.loadPropertyManager())
+                        Redirect(routes.PropertyController.loadPropertyManager(Some(property)))
                           .flashing("error" -> s"property with id ${property.id.get} cannot be updated")
                     case _ =>
-                        Redirect(routes.PropertyController.loadPropertyManager())
+                        Redirect(routes.PropertyController.loadPropertyManager(Some(property)))
                           .flashing("success" -> s"property with id  ${property.id.get} updated")
                 }
             }

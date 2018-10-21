@@ -2,10 +2,10 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-GET     /                           controllers.PropertyController.loadPropertyManager
+POST    /                           controllers.PropertyController.loadPropertyManager(property: Option[models.Property])
+GET     /                           controllers.PropertyController.loadPropertyManager(property: Option[models.Property])
 POST    /create-property            controllers.PropertyController.create
 POST    /delete-property            controllers.PropertyController.delete(id: Long)
-POST    /fill-form                  controllers.PropertyController.fillForm(property: models.Property)
 POST    /update-property            controllers.PropertyController.update(property: models.Property)
 
 # Map static resources from the /public folder to the /assets URL path
