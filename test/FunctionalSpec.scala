@@ -10,37 +10,52 @@ import play.api.test.Helpers._
  */
 class FunctionalSpec extends PlaySpec with GuiceOneAppPerSuite {
 
-  "Routes" should {
+    "Routes" should {
 
-    "send 404 on a bad request" in  {
-      route(app, FakeRequest(GET, "/boum")).map(status(_)) mustBe Some(NOT_FOUND)
+        "send 404 on a bad request" in  {
+            route(app, FakeRequest(GET, "/boum")).map(status(_)) mustBe Some(NOT_FOUND)
+        }
+
+        "send 200 on a good request" in  {
+            route(app, FakeRequest(GET, "/")).map(status(_)) mustBe Some(OK)
+        }
+
     }
 
-    "send 200 on a good request" in  {
-      route(app, FakeRequest(GET, "/")).map(status(_)) mustBe Some(OK)
+    "PropertyController" should {
+
+        "render the index page" in {
+            val home = route(app, FakeRequest(GET, "/")).get
+
+            status(home) mustBe Status.OK
+            contentType(home) mustBe Some("text/html")
+            contentAsString(home) must include ("Property Manager")
+        }
+
     }
 
-  }
+    "price-manager with NO parameters" should {
 
-  "HomeController" should {
+        "render the index page" in {
+            val home = route(app, FakeRequest(GET, "/price-manager")).get
 
-    "render the index page" in {
-      val home = route(app, FakeRequest(GET, "/")).get
+            status(home) mustBe Status.BAD_REQUEST
+            contentType(home) mustBe Some("text/html")
+            contentAsString(home) must include ("[Missing parameter: propertyID]")
+        }
 
-      status(home) mustBe Status.OK
-      contentType(home) mustBe Some("text/html")
-      contentAsString(home) must include ("Your new application is ready.")
     }
 
-  }
+    "price-manager with propertyID parameter" should {
 
-  "CountController" should {
+        "render the index page" in {
+            val home = route(app, FakeRequest(GET, "/price-manager?propertyID=1")).get
 
-    "return an increasing count" in {
-      contentAsString(route(app, FakeRequest(GET, "/count")).get) mustBe "0"
-      contentAsString(route(app, FakeRequest(GET, "/count")).get) mustBe "1"
-      contentAsString(route(app, FakeRequest(GET, "/count")).get) mustBe "2"
+            status(home) mustBe Status.OK
+            contentType(home) mustBe Some("text/html")
+            contentAsString(home) must include ("Price Manager")
+        }
+
     }
 
-  }
 }
