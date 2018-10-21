@@ -49,14 +49,14 @@ class PriceController @Inject()(repo: PriceRepositoryImpl, cc: MessagesControlle
         priceForm.bindFromRequest.fold (
 
             errorForm => {
-                //Logger.info(propertyID.toString)
-                priceForm.errors.map(e => Logger.info(e.message))
-                priceForm.errors.map(e => Logger.info(e.format))
-                //val propertyID = priceForm.data.get("propertyID").get.toLong
+                errorForm.errors.map(e => Logger.info(e.key))
+                errorForm.errors.map(e => Logger.info(e.message))
+                errorForm.errors.map(e => Logger.info(e.format))
+                val propertyID = errorForm.data.get("propertyID").get.toLong
                 repo.getPropertyPrices(1).map {
                     prices =>  BadRequest(views.html.price_manager(
                         errorForm,
-                        1,
+                        propertyID,
                         getCreateUpdateRoute(None),
                         getFormButtonText(None),
                         prices
@@ -114,7 +114,7 @@ class PriceController @Inject()(repo: PriceRepositoryImpl, cc: MessagesControlle
                         Redirect(routes.PriceController.loadPriceManager(price.propertyID, Some(price)))
                           .flashing("error" -> s"price with id ${price.id.get} cannot be updated")
                     case _ =>
-                        Redirect(routes.PriceController.loadPriceManager(price.propertyID, Some(price)))
+                        Redirect(routes.PriceController.loadPriceManager(price.propertyID, None))
                           .flashing("success" -> s"price with id  ${price.id.get} updated")
                 }
             }

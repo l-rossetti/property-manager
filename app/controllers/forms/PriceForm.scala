@@ -17,8 +17,9 @@ object PriceForm {
         mapping(
             "id" ->         optional(longNumber),
             "propertyID" -> longNumber,
-            "price" ->      of(doubleFormat).verifying(min(1.0)),
-            "date" ->       nonEmptyText
+            "price" ->      of(doubleFormat).verifying(min(1000.0)),
+            // date: dd-mm-yyyy (eg. 31/12/1999)
+            "date" ->       nonEmptyText.verifying("Date format dd-mm-yyyy", p => p.matches("""((0[1-9]|[12]\d|3[01])-(0[1-9]|1[0-2])-[12]\d{3})"""))
         )(Price.apply)(Price.unapply)
     }
 
@@ -50,8 +51,8 @@ object PriceForm {
 
     object ButtonText extends Enumeration {
         type ButtonText = Value
-        val Create  = Value("Create")
-        val Update  = Value("Update")
+        val Create  = Value("Create new")
+        val Update  = Value("Update price")
     }
 
 }

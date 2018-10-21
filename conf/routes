@@ -2,7 +2,7 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-# GET loads the page after update (rimanda a se stessa coi dati), POST modify button
+# GET loads the page, and reloads after creation/update, POST ask to modify button
 POST    /                           controllers.PropertyController.loadPropertyManager(property: Option[models.Property])
 GET     /                           controllers.PropertyController.loadPropertyManager(property: Option[models.Property])
 

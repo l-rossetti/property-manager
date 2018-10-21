@@ -17,11 +17,11 @@ object PropertyForm {
         mapping(
             "id" ->             optional(longNumber),
             "address" ->        nonEmptyText,
-            "postCode" ->       nonEmptyText.verifying("Number format required", p => p.matches("[0-9]+") ),
+            "postCode" ->       nonEmptyText.verifying("Expected: 06160", p => p.matches("[0-9]{5}")),
             "latitude" ->       of(doubleFormat).verifying(min(-180.0), max(180.0)),
             "longitude" ->      of(doubleFormat).verifying(min(-90.0), max(90.0)),
             "surface" ->        optional(number.verifying(min(10))),
-            "bedRoomCount" ->   optional(number.verifying(min(1)))
+            "bedRoomCount" ->   optional(number.verifying(min(0)))
         )(Property.apply)(Property.unapply)
     }
 
@@ -53,7 +53,7 @@ object PropertyForm {
 
     object ButtonText extends Enumeration {
         type ButtonText = Value
-        val Create  = Value("Create")
-        val Update  = Value("Update")
+        val Create  = Value("Create new")
+        val Update  = Value("Update property")
     }
 }
