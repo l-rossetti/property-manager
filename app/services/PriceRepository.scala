@@ -1,14 +1,14 @@
 package services
 
 import javax.inject.{Inject, Singleton}
-import models.{Price}
+import models.Price
 import play.api.db.slick.DatabaseConfigProvider
 import slick.jdbc.JdbcProfile
 import slick.jdbc.meta.MTable
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
-import scala.util.Try
+import scala.util.{Failure, Success, Try}
 
 
 /**
@@ -71,25 +71,33 @@ class PriceRepositoryImpl @Inject()(dbConfigProvider: DatabaseConfigProvider)(im
       */
     def create(price: Price): Future[Try[Price]] = db.run {
         val insertQuery = prices returning prices.map(_.id) into ((price, id) => price.copy(id = Some(id)))
-        (insertQuery += price).asTry
+        (insertQuery += price).map {
+            case p: Price => Success(p)
+            case _        => Failure(new Exception(": unknown exception"))
+        }
     }
 
-    def update(price: Price): Future[Option[Price]] = db.run {
+    def update(price: Price): Future[Try[Int]] = db.run {
         prices.filter(_.id === price.id).update(price).map {
-            case 0 => None
-            case 1 => Some(price)
+            case 1 => Success(1)
+            case 0 => Failure(new Exception(s"id ${price.id.get.toString} does not exist"))
+            case _ => Failure(new Exception("unknown exception"))
         }
     }
 
-    def delete(id: Long): Future[Boolean] = db.run {
+    def delete(id: Long): Future[Try[Int]] = db.run {
         prices.filter(_.id === id).delete.map {
-            case 0 => false
-            case _ => true
+            case 1 => Success(1)
+            case 0 => Failure(new Exception(s"id ${id.toString} does not exist"))
+            case _ => Failure(new Exception("unknown exception"))
         }
     }
 
-    def getPropertyPrices(propertyId: Long): Future[Seq[Price]] = db.run {
-        prices.filter(_.propertyID === propertyId).result
+    def getPropertyPrices(propertyId: Long): Future[Try[Seq[Price]]] = db.run {
+        prices.filter(_.propertyID === propertyId).result.map {
+            case p: Seq[Price] => Success(p)
+            case _             => Failure(new Exception("unknown exception"))
+        }
     }
 }
 
@@ -105,13 +113,13 @@ trait PriceRepository {
     /**
       * Update a price
       */
-    def update(price: Price): Future[Option[Price]]
+    def update(price: Price): Future[Try[Int]]
     /**
       * Delete a price by id
       */
-    def delete(id: Long): Future[Boolean]
+    def delete(id: Long): Future[Try[Int]]
     /**
       * List all the prices for a given propertyID.
       */
-    def getPropertyPrices(propertyId: Long): Future[Seq[Price]]
+    def getPropertyPrices(propertyId: Long): Future[Try[Seq[Price]]]
 }

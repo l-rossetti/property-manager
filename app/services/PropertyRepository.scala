@@ -1,5 +1,6 @@
 package services
 
+import akka.actor.FSM
 import javax.inject.{Inject, Singleton}
 import models.Property
 import play.api.db.slick.DatabaseConfigProvider
@@ -8,7 +9,7 @@ import slick.jdbc.meta.MTable
 
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, ExecutionContext, Future}
-import scala.util.{Try}
+import scala.util.{Failure, Success, Try}
 
 
 /**
@@ -83,25 +84,33 @@ class PropertyRepositoryImpl @Inject()(dbConfigProvider: DatabaseConfigProvider)
       */
     def create(property: Property): Future[Try[Property]] = db.run {
         val insertQuery = properties returning properties.map(_.id) into ((property, id) => property.copy(id = Some(id)))
-        (insertQuery += property).asTry
+        (insertQuery += property).map {
+            case p: Property => Success(p)
+            case _           => Failure(new Exception(": unknown exception"))
+        }
     }
 
-    def update(property: Property): Future[Option[Property]] = db.run {
+    def update(property: Property): Future[Try[Int]] = db.run {
         properties.filter(_.id === property.id).update(property).map {
-            case 0 => None
-            case 1 => Some(property)
+            case 1 => Success(1)
+            case 0 => Failure(new Exception(s"id ${property.id.get.toString} does not exist"))
+            case _ => Failure(new Exception("unknown exception"))
         }
     }
 
-    def delete(id: Long): Future[Boolean] = db.run {
+    def delete(id: Long): Future[Try[Int]] = db.run {
         properties.filter(_.id === id).delete.map {
-            case 0 => false
-            case _ => true
+            case 1 => Success(1)
+            case 0 => Failure(new Exception(s"id ${id.toString} does not exist"))
+            case _ => Failure(new Exception("unknown exception"))
         }
     }
 
-    def getProperties(): Future[Seq[Property]] = db.run {
-        properties.result
+    def getProperties(): Future[Try[Seq[Property]]] = db.run {
+        properties.result.map {
+            case p: Seq[Property] => Success(p)
+            case _                => Failure(new Exception("unknown exception"))
+        }
     }
 }
 
@@ -117,13 +126,13 @@ trait PropertyRepository {
     /**
       * Update a property
       */
-    def update(property: Property): Future[Option[Property]]
+    def update(property: Property): Future[Try[Int]]
     /**
       * Delete a property by id
       */
-    def delete(id: Long): Future[Boolean]
+    def delete(id: Long): Future[Try[Int]]
     /**
       * List all the properties in the database.
       */
-    def getProperties(): Future[Seq[Property]]
+    def getProperties(): Future[Try[Seq[Property]]]
 }

@@ -2,11 +2,13 @@ package controllers
 
 
 import javax.inject.{Inject, Singleton}
-import play.api.mvc.{MessagesAbstractController, MessagesControllerComponents}
+import play.api.Logger
+import play.api.data.{Form}
+import play.api.mvc._
 import services.PropertyRepository
 
-import scala.concurrent.ExecutionContext
-import scala.util.{Failure, Success}
+import scala.concurrent.{ExecutionContext, Future}
+import scala.util.{Failure, Success, Try}
 
 @Singleton
 class PropertyController @Inject() (repo: PropertyRepository,
@@ -18,11 +20,59 @@ class PropertyController @Inject() (repo: PropertyRepository,
     import forms.PropertyForm._
     import models.Property
 
-    def getCreateUpdateRoute(property: Option[Property]) = {
-        property match {
-            case None => routes.PropertyController.create
-            case _    => routes.PropertyController.update(property.get)
+    /**
+      * Handle services results in case of valid form
+      *
+      * @param result
+      * @param actionType shown in the message
+      * @return the HTML view
+      */
+    private def handleServiceResult(result: Future[Try[Any]], actionType: Actions.ActionName): Future[Result] = {
+        result.map {
+            case Failure(exc) =>
+                Redirect(routes.PropertyController.loadPropertyManager(None))
+                  .flashing("error" -> s"cannot ${actionType} property: ${exc.getMessage}")
+            case Success(_) =>
+                Redirect(routes.PropertyController.loadPropertyManager(None))
+                  .flashing("success" -> s"property ${actionType}d")
         }
+    }
+
+    /**
+      * Handle the case of validation errors for the property form
+      *
+      * @param errorForm form filled with errors
+      * @param result the list of properties to populate the table
+      * @param property optional Property (None in Create flow)
+      * @return the HTML view
+      */
+    private def handleFormError(errorForm: Form[Property], result: Future[Try[Seq[Property]]], property: Option[Property])
+                               (implicit request: MessagesRequestHeader): Future[Result] = {
+        result.map {
+            case Failure(exc) =>
+                BadRequest(getPropertyManagerView(errorForm, Seq[Property](), property))
+                  .flashing("error" -> s"error while getting list of properties: ${exc.getMessage}")
+            case Success(properties) =>
+                BadRequest(getPropertyManagerView(errorForm, properties, property))
+        }
+    }
+
+    /**
+      * Build the property-manager view filled with data
+      *
+      * @param propertyForm handles both success and error form cases
+      * @param properties the list of properties to populate the table
+      * @param property optional Property (None in Create flow)
+      * @return the HTML view
+      */
+    private def getPropertyManagerView(propertyForm: Form[Property], properties: Seq[Property], property: Option[Property])
+                                      (implicit request: MessagesRequestHeader) = {
+        views.html.property_manager(
+            propertyForm,
+            getCreateUpdateRoute(property),
+            getFormButtonText(property),
+            properties
+        )(request)
     }
 
     /**
@@ -30,12 +80,13 @@ class PropertyController @Inject() (repo: PropertyRepository,
       */
     def loadPropertyManager(property: Option[Property]) = Action.async { implicit request =>
         repo.getProperties().map {
-            properties =>  Ok(views.html.property_manager(
-                preparePropertyForm(property),
-                getCreateUpdateRoute(property),
-                getFormButtonText(property),
-                properties
-            ))
+            case Success(properties) =>
+                Ok(getPropertyManagerView(preparePropertyForm(property), properties, property))
+
+            case Failure(exc) =>
+                BadRequest(getPropertyManagerView(preparePropertyForm(property), Seq[Property](), property))
+                  .flashing("error" -> s"cannot load properties ${exc.getMessage}")
+
         }
     }
 
@@ -51,26 +102,10 @@ class PropertyController @Inject() (repo: PropertyRepository,
             // We also wrap the result in a successful future, since this action is synchronous, but we're required to return
             // a future because the property creation function returns a future.
             errorForm => {
-                repo.getProperties().map {
-                    properties =>  BadRequest(views.html.property_manager(
-                        errorForm,
-                        getCreateUpdateRoute(None),
-                        getFormButtonText(None),
-                        properties
-                    ))
-                }
+                handleFormError(errorForm, repo.getProperties(), None)
             },
-            // There were no errors in the form, so create the property.
             property => {
-                repo.create(property).map {
-                    case Success(property) =>
-                        // If successful, we simply redirect to the main page.
-                        Redirect(routes.PropertyController.loadPropertyManager(None))
-                          .flashing("success" -> s"new property created with id ${property.id.get}")
-                    case Failure(e) =>
-                        Redirect(routes.PropertyController.loadPropertyManager(None))
-                          .flashing("error" -> s"cannot create property ${e.getMessage}")
-                }
+                handleServiceResult(repo.create(property), Actions.Create)
             }
         )
     }
@@ -79,14 +114,8 @@ class PropertyController @Inject() (repo: PropertyRepository,
       * The delete property action.
       */
     def delete(id: Long) = Action.async { implicit request =>
-        repo.delete(id).map {
-            case false =>
-                Redirect(routes.PropertyController.loadPropertyManager(None))
-                  .flashing("error" -> "property cannot be deleted")
-            case true =>
-                Redirect(routes.PropertyController.loadPropertyManager(None))
-                  .flashing("success" -> s"property with id ${id} has been deleted")
-        }
+        handleServiceResult(repo.delete(id), Actions.Delete)
+        // TODO deleteProperty should cascade into deletePricesForProperty
     }
 
     /**
@@ -96,26 +125,26 @@ class PropertyController @Inject() (repo: PropertyRepository,
 
         propertyForm.bindFromRequest.fold(
             errorForm => {
-                repo.getProperties().map {
-                    properties =>  BadRequest(views.html.property_manager(
-                        errorForm,
-                        getCreateUpdateRoute(Some(property)),
-                        getFormButtonText(Some(property)),
-                        properties
-                    ))
-                }
+                handleFormError(errorForm, repo.getProperties(), Some(property))
             },
             property => {
-                repo.update(property).map {
-                    case None =>
-                        Redirect(routes.PropertyController.loadPropertyManager(Some(property)))
-                          .flashing("error" -> s"property with id ${property.id.get} cannot be updated")
-                    case _ =>
-                        Redirect(routes.PropertyController.loadPropertyManager(Some(property)))
-                          .flashing("success" -> s"property with id  ${property.id.get} updated")
-                }
+                handleServiceResult(repo.update(property), Actions.Update)
             }
         )
+    }
+
+    object Actions extends Enumeration {
+        type ActionName = Value
+        val Create  = Value("create")
+        val Update  = Value("update")
+        val Delete  = Value("delete")
+    }
+
+    private def getCreateUpdateRoute(property: Option[Property]) = {
+        property match {
+            case None => routes.PropertyController.create
+            case _    => routes.PropertyController.update(property.get)
+        }
     }
 
 }

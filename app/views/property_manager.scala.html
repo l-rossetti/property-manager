@@ -4,7 +4,8 @@
 
 @main("Property Manager ") {
     <div class="container" name="form-container">
-    @form(action) {
+        @if(propertyForm.data.get("id") != None){ <b> Administrate property id @propertyForm.data.get("id") </b>}
+        @form(action) {
         <div class="form-group row">
             <label for="id" class="col-sm-2 col-form-label"></label>
             <input name="id" value='@propertyForm.data.get("id")' id="ID" type="hidden"  class="form-control"/>
