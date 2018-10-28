@@ -1,11 +1,7 @@
 package services
 
-package services
-
-import java.util.Date
-
 import javax.inject.{Inject, Singleton}
-import models.{Price, Property}
+import models.{Price}
 import play.api.db.slick.DatabaseConfigProvider
 import slick.jdbc.JdbcProfile
 import slick.jdbc.meta.MTable

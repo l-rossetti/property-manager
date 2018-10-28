@@ -3,14 +3,14 @@ package controllers
 import javax.inject.{Inject, Singleton}
 import play.api.Logger
 import play.api.mvc.{MessagesAbstractController, MessagesControllerComponents}
-import services.services.PriceRepositoryImpl
+import services.PriceRepository
 
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success}
 
 
 @Singleton
-class PriceController @Inject()(repo: PriceRepositoryImpl, cc: MessagesControllerComponents)(implicit ec: ExecutionContext)
+class PriceController @Inject()(repo: PriceRepository, cc: MessagesControllerComponents)(implicit ec: ExecutionContext)
   extends MessagesAbstractController(cc) {
 
 

@@ -1,6 +1,6 @@
 import com.google.inject.AbstractModule
-
 import services._
+
 
 /**
  * This class is a Guice module that tells Guice how to bind several
@@ -16,8 +16,11 @@ class Module extends AbstractModule {
 
     override def configure() = {
 
-        // Set PropertyRepositoryImpl as the implementation of PropertyRepository
+        // Set for Guice which implementations to choose for the repositories
+        // in order to allow their injection into controllers (controllers should declare repo's Trait as parameter)
+        // when Play tries to instantiate a new Controller
         bind(classOf[PropertyRepository]).to(classOf[PropertyRepositoryImpl])
+        bind(classOf[PriceRepository]).to(classOf[PriceRepositoryImpl])
     }
 
 }
